@@ -9,7 +9,7 @@ except ImportError:
 
 __author__ = 'S Anand'
 __email__ = 'root.node@gmail.com'
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 # Python 3: define unicode() as str()
 if sys.version_info[0] == 3:
@@ -209,7 +209,14 @@ class Parker(XMLData):
         # If no children, just return the text
         children = [node for node in root if isinstance(node.tag, basestring)]
         if len(children) == 0:
-            return self._fromstring(root.text)
+            if not root.attrib:
+                return self._fromstring(root.text)
+            text = self._fromstring(root.text)
+            if text is not None:
+                attribs = root.attrib.copy()
+                attribs["value"] = text
+                return attribs
+            return root.attrib.copy()
 
         # Element names become object properties
         count = Counter(child.tag for child in children)
@@ -219,7 +226,6 @@ class Parker(XMLData):
                 result[child.tag] = self.data(child)
             else:
                 result.setdefault(child.tag, self.list()).append(self.data(child))
-
         return result
 
 
